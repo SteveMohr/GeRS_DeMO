@@ -1,0 +1,5 @@
+Zinc related files, adapted from electronic supplement of:
+https://doi.org/10.3390/resources7010017
+
+Coal/Fossil fuels files adapted from electronic supplement of:
+https://doi.org/10.1007/s40789-021-00449-x
