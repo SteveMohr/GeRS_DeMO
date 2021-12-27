@@ -8,6 +8,6 @@ and let me know what the error message is - fingers crossed it will be a simple 
 The folde Samples_Files contain some files to play with the program. (i.e. sample production, URR tables etc.)
 
 For more info on the model please see: 
-[](https://ogma.newcastle.edu.au/vital/access/manager/Repository/uon:6530)
-<my first name><dot>h<dot><my last name>gmail.com
+[https://ogma.newcastle.edu.au/vital/access/manager/Repository/uon:6530](https://ogma.newcastle.edu.au/vital/access/manager/Repository/uon:6530)
+`<my first name><dot>h<dot><my last name>@gmail.com`
 (sorry just trying to make sure it's not spammed with junk)
