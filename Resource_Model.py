@@ -1521,7 +1521,7 @@ def loadmodelfile(root,container,canvas,frames,mainclass,currframe):
     tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
     tmpfolder = tmp.name
     
-    if folder is None:
+    if tmpfolder is None:
         popupmessage(LOADFAILED,'Could not create temporary folder')
         return
     try:
