@@ -28,6 +28,8 @@ import datetime
 import sys
 import tempfile
 
+
+
 RUNLATEX = True
 LATEX = 'latex'
 BIBTEX = 'bibtex'
@@ -103,7 +105,7 @@ GENERALTAB = 'General_Info'
 IMPORTTABS = [INTERACTIONTAB,MINETAB,FIELDTAB,GENERALTAB]
 
 
-
+BOOSTABOVEMIN = 2.5
 
 
 LOADPRODTEXT = 'Load Production Data'
@@ -134,6 +136,7 @@ SUPERSCRIPTNUMS = {'0':u"\u2070",
                    '8':u"\u2078",
                    '9':u"\u2079"
                    }
+SMALLFONT = ("Helvetica",10)
 BUTTONFONT = ("Helvetica",12)
 RADIOBUTTONFONT = ("Helvetica",12)
 TITLEFONT = ("Helvetica",16)
@@ -164,7 +167,7 @@ SAVEASBUTTONLOC = (12,5)
 
 RUNSCENLOC = (12,2)
 RUNSCENTEXT = 'Run Static Scenario'
-
+RUNFULLTEXT = 'Run Model'
 DEMANDKEY = '+DEMANDALL+DEMANDALL+DEMANDALL+ALL+DEMANDALL+DEMANDALL'
 RECYCLEKEY = '+RECYCLE+RECYCLE+RECYCLE+ALL+RECYCLE+RECYCLE' 
 
@@ -652,7 +655,7 @@ DEFAULTINTINPUTS = {SHUTOFFPERCENT:0.01,
 GLOBALINPUTTERMS = {SHUTOFFPERCENT:scenarioobj((2,1),(2,0),None,"Shut off Percent",'Input'),
                     TIMEDELAY:scenarioobj((2,3),(2,2),None,"Time Delay",'Input'),
                     INITIALDEMAND:scenarioobj((2,5),(2,4),None,"Initial Demand",'Input'),
-                    KD:scenarioobj((3,1),(3,0),None,"Initial Demand",'Input'),
+                    KD:scenarioobj((3,1),(3,0),None,"Demand Rate",'Input'),
                     MAXDEMAND:scenarioobj((3,3),(3,2),None,"Max Demand",'Input'),
                     K1TERM:scenarioobj((3,5),(3,4),None,"K1",'Input'),
                     K2TERM:scenarioobj((4,1),(4,0),None,"K2",'Input'),
@@ -827,7 +830,7 @@ class elemcls():
     # wrapper - just to make it easier to hide/show frames
     def __init__(self,frame = None,row = 0,column = 0, sticky = 'nsew',columnspan = 1,rowspan = 1,padx = 0,pady = 0,text = '',obj = None,
                  image = None,fg = DESCCOLOR,bg = FRAMECOLOR,font = DESCFONT,width = None,variable = None,lista = [],
-                 anchor = 'nsew',justify = 'left',command = lambda a:a,height = 150,indicatoron = 0,value = '',widget = None):
+                 anchor = 'center',justify = 'left',command = lambda a:a,height = 150,indicatoron = 0,value = '',widget = None):
         self.clsname = 'elem'
         self.text = text
         self.row = row
@@ -853,7 +856,7 @@ class elemcls():
         if self.obj == 'label':
             self.elem = tk.Label(frame,image = image,text = text,fg = fg,bg = bg,font = font,width = width,justify = justify)
         elif self.obj == 'button':
-            self.elem = tk.Button(frame,text = text,command = command,font = font,fg = fg,bg = bg,width = width,justify = justify)
+            self.elem = tk.Button(frame,text = text,anchor = anchor,command = command,font = font,fg = fg,bg = bg,width = width,justify = justify)
         elif self.obj == 'frame':
             self.elem = tk.Frame(frame)
         elif self.obj == 'scrollframe':
@@ -2478,7 +2481,7 @@ def runfullmodelbutton(root,container,frames,mainclass,frame,toframe):
                       column = RUNSCENLOC[1],
                       padx = PADX,
                       pady = PADY,
-                      text = RUNSCENTEXT,
+                      text = RUNFULLTEXT,
                       command = lambda : runfullscenario(root,container,frames,mainclass,frame,toframe),
                       font = BUTTONFONT)
     runmodbut.grid()
@@ -2550,6 +2553,9 @@ def editmodelfunc(root,frames,mainclass,frame,toframe,container):
 
 
 def deletefunc(root,frames,mainclass,frame,tag,scenario):
+    print('got here')
+    #.scenarios
+    print(mainclass.scenarios.keys())
     deleterow = scenario.row
     forgetcycleframes(frames[frame].cycleframeelems[tag])
     diction = frames[frame].cycleframeelems[tag]
@@ -2645,7 +2651,10 @@ def makecyclebuttons(root,container,canvas,frames,mainclass,frame,scrollbox,butt
     scenario.button = elemcls(frame = scrollbox.elem,
                               row = frames[frame].elemsincycle,
                               column = 0,
+                              anchor = 'w',
+                              justify = 'left',
                               text = str(frames[frame].elemsincycle+1)+cyclename,
+                              font = SMALLFONT,
                               obj = 'button',
                               command = lambda : cyclefunc(root,frames,mainclass,frame,buttonfunc,toframe,container))
 
@@ -2653,13 +2662,14 @@ def makecyclebuttons(root,container,canvas,frames,mainclass,frame,scrollbox,butt
                               row = frames[frame].elemsincycle,
                               column = 1,
                               text = DELETEBUTTON,
-                              obj = 'button',
+                              font = SMALLFONT,obj = 'button',
                               command = lambda : deletefunc(root,frames,mainclass,frame,tag,scenario))
     ##### STEVE
     scenario.duplicate = elemcls(frame = scrollbox.elem,
                                  row = frames[frame].elemsincycle,
                                  column = 2,
                                  text = DUPLICATEBUTTON,
+                                 font = SMALLFONT,
                                  obj = 'button',
                                  command = lambda : duplicatefunc(root,container,canvas,frames,mainclass,frame,scrollbox,buttonfunc,cyclename,tag,scenariofunc,pagefunc,scenario,frame))
     return scenario
@@ -2875,13 +2885,18 @@ def relabelterms(frames,frame,cls):
         attr = term+LABEL
         frames[frame].elems[attr].elem.config(text = getattr(cls,term))
 
-def getymax(outlierdist,threshold):
-    if outlierdist is None:
+def getymax(production,threshold,ymin):
+    production.outlierdist    
+    if production.outlierdist is None:
         return 1
     try:
-        maxy = outlierdist*threshold
+        maxy = production.outlierdist*threshold
     except:
         maxy = 1
+    try:
+        maxy = max(ymin * BOOSTABOVEMIN,maxy)
+    except:
+        pass
     return maxy
 
 def getnumdeci(value):
@@ -3046,12 +3061,13 @@ def HLplot(production,outlierthreshold):
     if len(production.cumulative) == 0:
         return None
     ymin = getymin(production.prodovercumm)
-    ymax = getymax(production.outlierdist,outlierthreshold)
+    ymax = getymax(production,outlierthreshold,ymin)
     yticks = makeyticks(ymin,ymax)
     xticks,xlabel = makexticks(production.cumulative[-1])
     
     xmax = getxmax(xticks,production.cumulative[-1])
     vlines,sxticks = getvlines(production.years,production.cumulative,production.prodovercumm)
+    
     phl = plot.line(production.cumulative,production.prodovercumm,color = BLACK,style = '-')
     plt = plot.display([phl]+vlines,None,save = False,yminmax = (0,ymax),xminmax = (0,xmax),second_xminmax = (0,xmax),yticks = yticks,xticks = xticks,xlabel = xlabel,second_xticks = sxticks,second_xrotation = 90,figsize = HLPLOTSIZE)
         
@@ -3479,8 +3495,8 @@ def acceptscenario(root,frames,mainclass,frame,container,skipurr = False):
         return
     urrkey = makekey(cls,True)
     if urrkey in mainclass.scenarios:
-        messagebox.showerror(title = FAILTITLE,message = 'Scenario already exists')
-        return
+        messagebox.showwarning(title = FAILTITLE,message = 'Scenario already exists')
+        #return
     mainclass.scenarios[urrkey] = frame
     prodkey = makekey(cls,False)
     urr = None
