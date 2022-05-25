@@ -1596,7 +1596,7 @@ def loadmodelfile(root,container,canvas,frames,mainclass,currframe):
     #STEVIESTEVE
     for scenkey in mp:
         nframe = mplookup[scenkey]
-        acceptscenario(root,frames,mainclass,nframe,container,skipurr=True)
+        acceptscenario(root,frames,mainclass,nframe,container,skipurr=True,suppresswarnings = True)
         forgetframe(root,frames,nframe)
     for lab in (LOADPRODLAB,LOADURRLAB,LOADBIBTEXLAB):
         frames[NEWMODELFRAME].elems[lab].elem.config(text = frm[NEWMODELFRAME]['labels'][lab]) 
@@ -1868,7 +1868,7 @@ def getattribute(row):
         return None
     rawattr = str(rawattr)
     try:
-        attr = cleanword(rawattr).lower()
+        attr = cleanword(rawattr).lower().strip()
     except:
         attr = None
     if attr is None or attr == '':
@@ -1927,8 +1927,9 @@ def getproductionyear(production,attrs,index,warnings,errors,row,year):
     for elem in production:
         try:
             value = None
-            if row[i] is not None:
-                value = float(row[i])
+            val = row[i]
+            if val is not None and val != '':
+                value = float(val)
         except:
             value = None
             warning = 'Failed to read production value'
@@ -2112,7 +2113,7 @@ def loadprodfile(root,frames,mainclass,frame,labelelem):
     if ext.upper() in ('.XLSX','.XLS','.XLSM'):
         return processExcelProdFile(root,frames,mainclass,frame,labelelem,filename)
     if ext.upper() == '.CSV':
-        return processCSVProdFile(root,frames,frame,mainclass,labelelem,filename)
+        return processCSVProdFile(root,frames,mainclass,frame,labelelem,filename)
     messagebox.showerror(title=FAILTITLE, message='Invalid Extension: '+ext+'\nFile needs to be excel (xlsx) or csv')
     return
 
@@ -3489,14 +3490,15 @@ class InputURR(object):
         else:
             self.label.config(text = URRINPUTERRORMESSAGE)
     
-def acceptscenario(root,frames,mainclass,frame,container,skipurr = False):
+def acceptscenario(root,frames,mainclass,frame,container,skipurr = False,suppresswarnings = False):
     cls = createcls(root,frames,mainclass,frame)
     if cls is None:
         return
     urrkey = makekey(cls,True)
     if urrkey in mainclass.scenarios:
-        messagebox.showwarning(title = FAILTITLE,message = 'Scenario already exists')
-        #return
+        if not suppresswarnings:
+            messagebox.showwarning(title = FAILTITLE,message = 'Scenario already exists')
+            #return
     mainclass.scenarios[urrkey] = frame
     prodkey = makekey(cls,False)
     urr = None
